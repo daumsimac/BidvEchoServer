@@ -1,8 +1,7 @@
 package com.example.bidv_echo_server.controller;
 
 import com.example.bidv_echo_server.constants.ApiRestURIConstants;
-import com.example.bidv_echo_server.model.FirmInqBeneRepLayer;
-import com.example.bidv_echo_server.model.FirmInqBeneReqLayer;
+import com.example.bidv_echo_server.model.*;
 import com.example.bidv_echo_server.service.BidvRepService;
 import com.example.bidv_echo_server.util.XmlStringUtil;
 import org.slf4j.Logger;
@@ -13,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -59,6 +57,41 @@ public class BidvEchoController {
             rep.setBusinessErrorDesc("서버에러");
 
             return ResponseEntity.status(rep.getStatus()).
+                    header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).body(rep);
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).
+                header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).body(rep);
+    }
+
+    /**
+     * 예금주조회 api 요청
+     *
+     * @return JSON
+     */
+    @RequestMapping(value = ApiRestURIConstants.FUND_TRANSFER, method = RequestMethod.POST)
+    public @ResponseBody ResponseEntity<?> transferFund(@RequestBody String req) {
+        FundTransRepLayout rep = null;
+        FundTransReqLayout fundTransReqLayout = null;
+        String str = XmlStringUtil.createValidXml(req);
+        try{
+            JAXBContext jaxbContext = JAXBContext.newInstance(FirmInqBeneReqLayer.class); // JAXB Context 생성
+            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller(); // Unmarshaller Object 생성
+            fundTransReqLayout = (FundTransReqLayout) unmarshaller.unmarshal(new StringReader(xmlHeader + str));
+            System.out.println(fundTransReqLayout.toString());
+
+            rep = this.bidvRepService.replyFundTransfer(fundTransReqLayout);
+        }catch (Exception e){
+            this.logger.error("BidvEchoController error.", e);
+
+            //시스템 에러
+            rep = new FundTransRepLayout();
+
+            rep.setStatus("500");
+            rep.setBusinessErrorCode("9999");
+            rep.setBusinessErrorDesc("서버에러");
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).
                     header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).body(rep);
         }
 
