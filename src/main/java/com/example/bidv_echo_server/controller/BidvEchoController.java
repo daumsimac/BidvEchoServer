@@ -65,20 +65,24 @@ public class BidvEchoController {
     }
 
     /**
-     * 예금주조회 api 요청
+     * 송금 api 요청
      *
      * @return JSON
      */
     @RequestMapping(value = ApiRestURIConstants.FUND_TRANSFER, method = RequestMethod.POST)
     public @ResponseBody ResponseEntity<?> transferFund(@RequestBody String req) {
+        this.logger.info(req);
         FundTransRepLayout rep = null;
         FundTransReqLayout fundTransReqLayout = null;
         String str = XmlStringUtil.createValidXml(req);
+        this.logger.info(str);
+        System.out.println(xmlHeader + str);
+        String validXml = xmlHeader + str;
         try{
-            JAXBContext jaxbContext = JAXBContext.newInstance(FirmInqBeneReqLayer.class); // JAXB Context 생성
+            JAXBContext jaxbContext = JAXBContext.newInstance(FundTransReqLayout.class); // JAXB Context 생성
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller(); // Unmarshaller Object 생성
-            fundTransReqLayout = (FundTransReqLayout) unmarshaller.unmarshal(new StringReader(xmlHeader + str));
-            System.out.println(fundTransReqLayout.toString());
+            fundTransReqLayout = (FundTransReqLayout) unmarshaller.unmarshal(new StringReader(validXml));
+            System.out.println(new StringReader(xmlHeader + str));
 
             rep = this.bidvRepService.replyFundTransfer(fundTransReqLayout);
         }catch (Exception e){
@@ -96,6 +100,6 @@ public class BidvEchoController {
         }
 
         return ResponseEntity.status(HttpStatus.OK).
-                header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).body(rep);
+                header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).body(req);
     }
 }

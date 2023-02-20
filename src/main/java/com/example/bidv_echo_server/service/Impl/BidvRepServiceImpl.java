@@ -69,7 +69,7 @@ public class BidvRepServiceImpl implements BidvRepService {
         rep.setBusinessErrorCode("200");
         rep.setBusinessErrorDesc("NORMAL");
         rep.setProcessedRecord(req.getProcessedRecord());
-        rep.setTr_infos(rep.getTr_infos());
+        rep.setTr_info(rep.getTr_info());
         return rep;
     }
 }
